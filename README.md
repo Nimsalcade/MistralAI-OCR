@@ -4,7 +4,7 @@ The **Mistral OCR App** is a Streamlit-based web application that leverages the 
 
 ### 🚀 Try the Mistral OCR App Live!  
 
-🔗 **Live Demo:** [Mistral OCR App](https://mistralocrai.streamlit.app/)  
+🔗 **Live Demo:** [Mistral OCR App](https://nimsalcade-mistralai-ocr.streamlit.app/)  
 
 Experience the power of **Mistral OCR** in action! Upload PDFs or images and extract text seamlessly with this interactive **Streamlit-based OCR app**.  
 
@@ -17,10 +17,11 @@ Experience the power of **Mistral OCR** in action! Upload PDFs or images and ext
 - **Multiple Input Methods:** Choose between URL input or local file uploads.
 - **Real-Time Preview:** Display the original file (via an iframe for PDFs or using `st.image` for images).
 - **OCR Extraction:** Get OCR results presented in a clean, two-column layout.
-- **Downloadable Results:** Download the OCR output with a custom HTML link that avoids a full page refresh.
+- **Downloadable Results:** Download the OCR output in multiple formats (JSON, TXT, Markdown).
 - **Interactive Interface:** Built with Streamlit for a smooth and interactive user experience.
 - **Large PDF Support:** Automatically splits and processes large PDFs (300+ pages) in smaller chunks.
 - **Original Filename Preservation:** Download files maintain the original document names.
+- **API Key Management:** Uses Streamlit secrets for secure API key storage.
 
 ## Installation
 
@@ -56,35 +57,21 @@ Experience the power of **Mistral OCR** in action! Upload PDFs or images and ext
 
 3. **Install Required Dependencies:**
 
-   Create a `requirements.txt` file (if not already present) with:
-   ```plaintext
-   streamlit
-   mistralai
-   PyPDF2
-   ```
-
-   Then install them:
    ```bash
    pip install -r requirements.txt
    ```
 
 4. **Set Up Your Mistral API Key:**
 
-   The app requires a Mistral API key. Export your API key as an environment variable:
+   For local development:
+   - Enter your API key in the app when prompted
 
-   - On macOS/Linux:
-     ```bash
-     export MISTRAL_API_KEY=your_api_key_here
-     ```
-
-   - On Windows (Command Prompt):
-     ```bash
-     set MISTRAL_API_KEY=your_api_key_here
-     ```
+   For Streamlit Cloud deployment:
+   - Add your API key to Streamlit secrets (see Deployment section)
 
 ## Usage
 
-To run the app, use the following command:
+To run the app locally, use the following command:
 
 ```bash
 streamlit run main.py
@@ -93,7 +80,7 @@ streamlit run main.py
 ### How It Works
 
 1. **API Key Entry:**  
-   When you launch the app, you'll be prompted to enter your Mistral API key.
+   When you launch the app locally, you'll be prompted to enter your Mistral API key. In production, the API key is securely stored in Streamlit secrets.
 
 2. **File Type & Source Selection:**  
    Choose whether you want to process a **PDF** or an **Image** and select the source type—either via a URL or by uploading a file.
@@ -102,7 +89,7 @@ streamlit run main.py
    For PDFs, you can configure the chunk size for splitting large documents. This helps process PDFs with hundreds of pages.
 
 4. **Processing:**  
-   Click the **Process** button to send the document to the Mistral OCR API. The app then:
+   Click the **Extract Text** button to send the document to the Mistral OCR API. The app then:
    - Displays a preview of the document in the left column.
    - Shows the extracted OCR results in the right column.
    - Provides download links for the OCR output in multiple formats.
@@ -110,11 +97,36 @@ streamlit run main.py
 5. **Download:**  
    Click the download link to save the OCR result as JSON, TXT, or MD file. Downloads preserve the original filename.
 
+## Deployment to Streamlit Cloud
+
+This app is designed to be deployed on Streamlit Cloud:
+
+1. **Fork or Clone the Repository:**
+   - Fork this repository to your GitHub account
+
+2. **Deploy on Streamlit Cloud:**
+   - Go to [share.streamlit.io](https://share.streamlit.io/)
+   - Sign in with GitHub
+   - Click "New app"
+   - Select your repository, branch (main), and set the main file path to "main.py"
+   - Click "Deploy!"
+
+3. **Add Your API Key to Streamlit Secrets:**
+   - After deployment, go to your app settings
+   - Navigate to "Secrets"
+   - Add the following content:
+     ```
+     MISTRAL_API_KEY = "your-actual-mistral-api-key"
+     ```
+   - Click "Save"
+
+The app will automatically use the API key from secrets without prompting users to enter it.
+
 ## Code Overview
 
 - **main.py:**  
   The main Streamlit application file that contains the logic for:
-  - User input handling (API key, file type, source type)
+  - User input handling (file type, source type)
   - Document preparation (base64 encoding for local uploads)
   - PDF splitting for large documents
   - Calling the Mistral OCR API
@@ -142,7 +154,6 @@ This project is licensed under the [MIT License](LICENSE).
 - [Streamlit](https://streamlit.io/) for making interactive web app development easy.
 - [Mistralai](https://github.com/mistralai) for their powerful OCR API and Python client.
 - [PyPDF2](https://github.com/py-pdf/pypdf) for PDF manipulation capabilities.
-- Original code base from [AI Anytime](https://github.com/AIAnytime/Mistral-OCR-App).
 
 ## Contact
 

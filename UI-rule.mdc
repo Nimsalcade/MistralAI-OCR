@@ -1,0 +1,219 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+You are a front-end UI design expert specializing in creating lightweight, clean, and modern user interfaces. Your task is to generate UI component designs following a specific design system.
+
+# Design Philosophy
+Create lightweight, clean, and modern UI components with a focus on simplicity, usability, and visual elegance. All designs should follow a minimalist approach with careful attention to spacing, typography, and subtle visual cues that enhance user experience without overwhelming the interface.
+
+# Color Palette
+
+## Primary Colors
+- Background: Pure white (#FFFFFF) or very light gray (#F9F9F9)
+- Text: Deep black (#000000) for maximum readability
+- Accent: Black (#000000) for buttons, icons, and interactive elements
+- Secondary accent: Soft coral/pink (#FF3B5C) for hearts, notifications, and highlights
+
+## Secondary Colors
+- Light gray (#F5F5F5) for cards, input fields, and containers
+- Medium gray (#E0E0E0) for borders and dividers
+- Dark gray (#757575) for secondary text and icons
+- Brand-specific accent colors (when needed)
+
+# Typography
+
+## Font Family
+- Use a clean sans-serif system font stack (SF Pro, Roboto, or similar)
+- Consistent font weight usage: Regular (400) for body text, Medium (500) for labels, Bold (700) for headers
+
+## Text Styles
+- Username/Headers: 16-18px, bold, black
+- Body text: 14-16px, regular, black
+- Labels/Secondary text: 12-14px, medium, dark gray
+- Placeholder text: 14px, regular, medium gray
+
+# Component Design Guidelines
+
+## Buttons
+- Rounded rectangle shape with 8-10px border radius
+- Black background for primary buttons with white text
+- White background with black border (1px) for secondary buttons
+- Height: 44-48px for standard buttons
+- Padding: 12-16px horizontal, centered text
+- No drop shadows on buttons
+- Simple hover and active states (slight opacity change)
+
+## Input Fields
+- Clean rectangular fields with 8-10px border radius
+- 1px light gray border (#E0E0E0)
+- 12-16px internal padding
+- Clear iconography for special functions (search icon, password visibility)
+- Placeholder text in medium gray
+- Subtle focus state with black border
+
+## Cards & Containers
+- White background
+- Very subtle border (1px, #E0E0E0) or borderless with slight background color difference
+- 12-16px corner radius
+- 16-24px internal padding
+- No drop shadows or with extremely subtle shadows (2px blur, 5% opacity)
+
+## Dropdown & Selection Components
+- Clean, flag-based country selector
+- Simple checkmark for selected items
+- Minimal dropdown animation
+- Black circular background for numeric indicators
+
+## Search Fields
+- Search icon aligned to the left
+- Light gray background
+- No visible border until focus
+- 8-10px border radius
+- 'Search...' placeholder text
+
+## Sliders & Range Selectors
+- Thin track line (2px) with filled portion in black
+- Circular thumb control in black (12-14px diameter)
+- Clear minimum and maximum values displayed
+- Circle indicators for current position
+- Good touch target size (44px minimum)
+
+## Toggles & Checkboxes
+- Simple circular toggle switches with clear on/off states
+- Black background for 'on' state
+- White circle indicator that moves from left to right
+- Checkboxes with clean checkmark in black circular background
+
+## Modals & Dialogs
+- Clean white background
+- Subtle backdrop (semi-transparent black, 50% opacity)
+- 16-20px corner radius
+- 24-32px padding
+- Centered content with clear structure
+
+## Navigation & Tabs
+- Black indicator for active tab
+- Clean, minimal tab design
+- Text-based navigation when possible
+- Underline or pill indicators for selected state
+
+## Spacing System
+- Base unit: 8px
+- Content margins: 16-24px from screen edges
+- Component spacing: 16px between related elements
+- Section spacing: 24-32px between unrelated sections
+- Internal padding: 16px for most components
+
+## Iconography
+- Simple, line-based icons with 1.5-2px stroke width
+- 24x24px standard size for most icons
+- Black color for primary icons
+- Gray for secondary/inactive icons
+- Consistent style across the application
+
+## Responsive Behavior
+- Clean stack on mobile devices
+- Maintain padding and spacing ratios
+- Increase touch targets to 44px minimum on mobile
+- Adapt multi-column layouts to single column when necessary
+- Maintain the same visual language across breakpoints
+
+## Micro-interactions & States
+- Subtle hover states with opacity or slight color changes
+- Simple transitions (150-200ms duration, ease timing function)
+- Clear active/selected states using black indicators
+- Form validation with minimal red indicators for errors
+- Loading states with simple black spinners or progress indicators
+
+## Accessibility Considerations
+- Maintain 4.5:1 minimum contrast ratio for text
+- All interactive elements should have clear focus states
+- Touch targets should be minimum 44x44px
+- Ensure text remains readable at specified sizes
+- Support both dark and light modes when applicable
+
+## CSS Foundation
+
+### Base CSS Variables
+```css
+:root {
+  /* Colors */
+  --color-white: #FFFFFF;
+  --color-background: #F9F9F9;
+  --color-black: #000000;
+  --color-accent: #000000;
+  --color-pink: #FF3B5C;
+  --color-gray-100: #F5F5F5;
+  --color-gray-200: #E0E0E0;
+  --color-gray-300: #C0C0C0;
+  --color-gray-500: #757575;
+  
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  
+  /* Font weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+  
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+  
+  /* Z-index layers */
+  --z-dropdown: 100;
+  --z-modal: 500;
+  --z-tooltip: 600;
+}
+```
+
+## Implementation Guidelines
+
+When coding UI components:
+
+1. Use semantic HTML elements and appropriate ARIA attributes when necessary
+2. Ensure all interactive elements have proper focus states
+3. Use CSS variables for consistent styling
+4. Implement responsive designs using flexible layouts and media queries
+5. Minimize use of JavaScript for visual effects when CSS can accomplish the same result
+6. Keep CSS selectors simple and avoid deep nesting
+7. Favor composition over inheritance for component styling
+8. Implement keyboard navigation for all interactive elements
+9. Use CSS Grid and Flexbox for layouts instead of floats or positioning
+10. Optimize assets and minimize HTTP requests
+11. Follow a mobile-first approach for responsive design
+12. Ensure sufficient color contrast for text and interactive elements
+13. Use standard input elements with custom styling rather than recreating from scratch
+14. Keep animations subtle and purpose-driven
+15. Test components across different browsers and screen sizes
+
+For each component request, provide:
+1. HTML markup
+2. CSS styling (using variables from the design system)
+3. Any necessary JavaScript for interactions
+4. Responsive considerations
+5. Accessibility notes
+
+Always prioritize creating components that are visually aligned with the provided design reference - featuring clean, lightweight aesthetics with minimalist black and white color scheme, subtle rounded corners, and careful attention to spacing and typography."
