@@ -7,6 +7,7 @@ import tempfile
 from mistralai import Mistral
 import PyPDF2
 import io
+import re
 
 # Set page configuration with a modern layout
 st.set_page_config(
@@ -132,6 +133,33 @@ st.markdown("""
     iframe, img {
         border-radius: 8px;
     }
+    
+    /* Table formatting */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+    
+    th, td {
+        border: 1px solid #E0E0E0;
+        padding: 0.5rem;
+        text-align: left;
+    }
+    
+    th {
+        background-color: #F5F5F5;
+        font-weight: 600;
+    }
+    
+    /* Code block */
+    pre {
+        background-color: #F5F5F5;
+        padding: 1rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-family: monospace;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -185,8 +213,8 @@ with st.container():
         
         st.markdown("""
         <div class="feature-card">
-            <h4>Multiple Export Formats</h4>
-            <p>Download results as JSON, TXT, or Markdown files.</p>
+            <h4>Text Formatting Cleanup</h4>
+            <p>Intelligently cleans up and formats extracted text to match the original document.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -214,6 +242,107 @@ def split_pdf(pdf_bytes, chunk_size=100):
         chunks.append(output.getvalue())
     
     return chunks
+
+# Function to clean up OCR text and improve formatting
+def clean_ocr_text(text):
+    # Keep track of original text for comparison
+    original_text = text
+    
+    # 1. Fix table formatting
+    # Look for table-like structures with | characters
+    table_pattern = r'(\|[^\n]+\|)'
+    
+    def fix_table(match):
+        table_row = match.group(1)
+        # Make sure cells are properly spaced
+        cells = table_row.split('|')
+        cells = [cell.strip() for cell in cells if cell.strip()]
+        if cells:
+            return '| ' + ' | '.join(cells) + ' |'
+        return match.group(1)
+    
+    text = re.sub(table_pattern, fix_table, text)
+    
+    # 2. Remove random numeric sequences (like 18.1.1.1.1.1.2.1.2...)
+    text = re.sub(r'(\d+\.){10,}(\d+)', '', text)
+    
+    # 3. Fix heading formatting (ensure proper spacing after #)
+    text = re.sub(r'#([A-Z])', r'# \1', text)
+    
+    # 4. Fix duplicate headings that appear consecutively
+    text = re.sub(r'(# [^\n]+)\n\1', r'\1', text)
+    
+    # 5. Clean up image references
+    text = re.sub(r'!\[img-\d+\.jpeg\]\(img-\d+\.jpeg\)', '', text)
+    
+    # 6. Fix chapter and section formatting
+    # Make "Chapter X" into a heading if it's not already
+    text = re.sub(r'(?<!#)Chapter (\d+)', r'## Chapter \1', text)
+    
+    # 7. Fix spacing around headers
+    text = re.sub(r'(#+) ([^\n]+)(?!\n\n)', r'\1 \2\n\n', text)
+    
+    # 8. Convert markdown tables to proper format
+    lines = text.split('\n')
+    for i in range(len(lines)):
+        if '|' in lines[i] and i > 0 and i < len(lines) - 1:
+            # Check if this is a table header row
+            if ':--:' in lines[i] or ':--' in lines[i] or '--:' in lines[i]:
+                continue
+            
+            # Check if this is already a properly formatted table
+            if lines[i-1].count('|') >= 2 and lines[i].count('|') >= 2:
+                # This is likely a table, make sure headers have separator
+                if not ((':--:' in lines[i]) or (':--' in lines[i]) or ('--:' in lines[i])):
+                    # Insert a separator row after the header
+                    cols = lines[i-1].count('|') - 1
+                    if cols > 0:
+                        separator = '| ' + ' | '.join(['---' for _ in range(cols)]) + ' |'
+                        lines.insert(i, separator)
+    
+    text = '\n'.join(lines)
+    
+    # 9. Clean up weird line breaks in paragraphs
+    # Join lines that don't end with period, question mark, or exclamation
+    lines = text.split('\n')
+    i = 0
+    while i < len(lines) - 1:
+        if (lines[i] and not lines[i].startswith('#') and 
+            not lines[i].startswith('|') and not lines[i].startswith('```') and
+            not lines[i].startswith('- ') and not lines[i].startswith('* ') and
+            not lines[i].startswith('1. ') and not lines[i].endswith('.') and
+            not lines[i].endswith('?') and not lines[i].endswith('!') and
+            not lines[i].endswith(':') and lines[i+1] and
+            not lines[i+1].startswith('#') and not lines[i+1].startswith('|') and
+            not lines[i+1].startswith('```') and not lines[i+1].startswith('- ') and
+            not lines[i+1].startswith('* ') and not lines[i+1].startswith('1. ')):
+            lines[i] = lines[i] + ' ' + lines[i+1]
+            lines.pop(i+1)
+        else:
+            i += 1
+    
+    text = '\n'.join(lines)
+    
+    # 10. Add proper spacing between sections
+    text = re.sub(r'(^|\n)(#+ [^\n]+)(?!\n\n)', r'\1\2\n\n', text)
+    
+    # 11. Ensure double line breaks after headings
+    for i in range(4, 0, -1):  # Handle h4, h3, h2, h1
+        hashes = '#' * i
+        text = re.sub(f'{hashes} ([^\\n]+)\\n(?!\\n)', f'{hashes} \\1\n\n', text)
+    
+    # If the text didn't change much, return the original to avoid unnecessary changes
+    if len(text) > len(original_text) * 0.9 and len(text) < len(original_text) * 1.1:
+        return text
+    else:
+        return original_text
+
+# Function to generate a formatted PDF from cleaned markdown text
+def create_pdf_from_markdown(markdown_text, file_name):
+    # This function would convert markdown to PDF
+    # For now, we'll just return the markdown text as we don't have PDF generation
+    # capabilities in this web app
+    return markdown_text
 
 # Main app section with card-like appearance
 st.markdown('<div style="background-color: #F5F5F5; padding: 2rem; border-radius: 12px; margin-top: 2rem;">', unsafe_allow_html=True)
@@ -256,6 +385,8 @@ else:
 # Initialize session state variables for persistence
 if "ocr_result" not in st.session_state:
     st.session_state["ocr_result"] = []
+if "cleaned_result" not in st.session_state:
+    st.session_state["cleaned_result"] = []
 if "preview_src" not in st.session_state:
     st.session_state["preview_src"] = []
 if "image_bytes" not in st.session_state:
@@ -296,6 +427,19 @@ if file_type == "PDF":
         chunk_size = st.slider("Pages per chunk", 50, 200, 100, 
                               help="For PDFs with many pages, the document will be automatically split into chunks of this many pages")
         st.caption("Large PDFs will be split into chunks to optimize processing.")
+        
+        # Add text cleanup options
+        st.markdown("Text Cleanup Options:")
+        cleanup_enabled = st.checkbox("Enable advanced text formatting cleanup", value=True,
+                                     help="Cleans up and formats extracted text to better match the original document")
+        
+        if cleanup_enabled:
+            cleanup_level = st.select_slider(
+                "Cleanup Level",
+                options=["Light", "Medium", "Aggressive"],
+                value="Medium",
+                help="Light: minimal changes, Medium: balanced cleanup, Aggressive: maximum formatting"
+            )
 
 # Input fields based on selection
 input_url = ""
@@ -332,6 +476,7 @@ if process_button:
             client = Mistral(api_key=api_key)
         
         st.session_state["ocr_result"] = []
+        st.session_state["cleaned_result"] = []
         st.session_state["preview_src"] = []
         st.session_state["image_bytes"] = []
         st.session_state["file_names"] = []
@@ -379,8 +524,17 @@ if process_button:
                             
                             pages = ocr_response.pages if hasattr(ocr_response, "pages") else (ocr_response if isinstance(ocr_response, list) else [])
                             result_text = "\n\n".join(page.markdown for page in pages) or "No result found."
+                            
+                            # Apply text cleanup if enabled
+                            if 'cleanup_enabled' in locals() and cleanup_enabled:
+                                cleaned_text = clean_ocr_text(result_text)
+                                st.session_state["cleaned_result"].append(cleaned_text)
+                            else:
+                                st.session_state["cleaned_result"].append(result_text)
+                                
                         except Exception as e:
                             result_text = f"Error extracting result: {e}"
+                            st.session_state["cleaned_result"].append(result_text)
                         
                         st.session_state["ocr_result"].append(result_text)
                 else:
@@ -438,6 +592,13 @@ if process_button:
                             except Exception as e:
                                 result_text = f"Error extracting result: {e}"
                     
+                    # Apply text cleanup if enabled
+                    if 'cleanup_enabled' in locals() and cleanup_enabled:
+                        cleaned_text = clean_ocr_text(result_text)
+                        st.session_state["cleaned_result"].append(cleaned_text)
+                    else:
+                        st.session_state["cleaned_result"].append(result_text)
+                        
                     st.session_state["ocr_result"].append(result_text)
             else:
                 if source_type == "URL":
@@ -458,8 +619,16 @@ if process_button:
                         
                         pages = ocr_response.pages if hasattr(ocr_response, "pages") else (ocr_response if isinstance(ocr_response, list) else [])
                         result_text = "\n\n".join(page.markdown for page in pages) or "No result found."
+                        
+                        # Apply text cleanup if enabled
+                        if 'cleanup_enabled' in locals() and cleanup_enabled:
+                            cleaned_text = clean_ocr_text(result_text)
+                            st.session_state["cleaned_result"].append(cleaned_text)
+                        else:
+                            st.session_state["cleaned_result"].append(result_text)
                     except Exception as e:
                         result_text = f"Error extracting result: {e}"
+                        st.session_state["cleaned_result"].append(result_text)
                 
                 st.session_state["ocr_result"].append(result_text)
                 st.session_state["preview_src"].append(preview_src)
@@ -495,6 +664,9 @@ if st.session_state["ocr_result"]:
             else:
                 file_base_name = f"Document_{idx+1}"
             
+            # Get the cleaned result
+            cleaned_result = st.session_state["cleaned_result"][idx] if idx < len(st.session_state["cleaned_result"]) else result
+            
             col1, col2 = st.columns(2)
             
             with col1:
@@ -513,6 +685,11 @@ if st.session_state["ocr_result"]:
             with col2:
                 st.markdown(f"### Extracted Text")
                 
+                # Add toggle for raw vs cleaned text
+                show_raw = st.checkbox("Show raw OCR output", value=False, key=f"raw_toggle_{idx}")
+                
+                display_text = result if show_raw else cleaned_result
+                
                 # Download section with better UI
                 with st.expander("💾 Download Options", expanded=True):
                     st.markdown("Save the extracted text in your preferred format:")
@@ -527,21 +704,21 @@ if st.session_state["ocr_result"]:
                     download_row = '<div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">'
                     
                     # JSON download
-                    json_data = json.dumps({"ocr_result": result}, ensure_ascii=False, indent=2)
+                    json_data = json.dumps({"ocr_result": display_text}, ensure_ascii=False, indent=2)
                     download_row += create_download_link(json_data, "application/json", f"{file_base_name}.json", "JSON")
                     
                     # TXT download
-                    download_row += create_download_link(result, "text/plain", f"{file_base_name}.txt", "TXT")
+                    download_row += create_download_link(display_text, "text/plain", f"{file_base_name}.txt", "TXT")
                     
                     # MD download
-                    download_row += create_download_link(result, "text/markdown", f"{file_base_name}.md", "Markdown")
+                    download_row += create_download_link(display_text, "text/markdown", f"{file_base_name}.md", "Markdown")
                     
                     download_row += '</div>'
                     st.markdown(download_row, unsafe_allow_html=True)
                 
                 # Text preview with scrolling
                 st.markdown('<div style="height: 480px; overflow-y: auto; padding: 1rem; border-radius: 8px; border: 1px solid #E0E0E0; background-color: #FAFAFA; font-family: monospace;">', unsafe_allow_html=True)
-                st.markdown(result)
+                st.markdown(display_text)
                 st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
@@ -549,6 +726,7 @@ if st.session_state["ocr_result"]:
     # Add a clear results button
     if st.button("Clear Results", key="clear_results"):
         st.session_state["ocr_result"] = []
+        st.session_state["cleaned_result"] = []
         st.session_state["preview_src"] = []
         st.session_state["image_bytes"] = []
         st.session_state["file_names"] = []
