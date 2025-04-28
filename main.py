@@ -8,6 +8,13 @@ from mistralai import Mistral
 import PyPDF2
 import io
 import re
+import markdown
+from datetime import datetime
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
 
 # Set page configuration with a modern layout
 st.set_page_config(
@@ -337,12 +344,183 @@ def clean_ocr_text(text):
     else:
         return original_text
 
-# Function to generate a formatted PDF from cleaned markdown text
+# Function to convert markdown to PDF
 def create_pdf_from_markdown(markdown_text, file_name):
-    # This function would convert markdown to PDF
-    # For now, we'll just return the markdown text as we don't have PDF generation
-    # capabilities in this web app
-    return markdown_text
+    """Convert markdown text to a PDF file using ReportLab."""
+    try:
+        # Create a buffer for the PDF
+        buffer = io.BytesIO()
+        
+        # Create the PDF document
+        doc = SimpleDocTemplate(buffer, pagesize=letter, 
+                                rightMargin=72, leftMargin=72,
+                                topMargin=72, bottomMargin=72)
+        
+        # Container for the 'Flowable' objects
+        elements = []
+        
+        # Define styles
+        styles = getSampleStyleSheet()
+        title_style = styles['Title']
+        title_style.textColor = colors.HexColor('#4527A0')
+        
+        heading1_style = styles['Heading1']
+        heading1_style.textColor = colors.HexColor('#5E35B1')
+        
+        heading2_style = styles['Heading2']
+        heading2_style.textColor = colors.HexColor('#673AB7')
+        
+        normal_style = styles['Normal']
+        
+        # Create a code style
+        code_style = ParagraphStyle(
+            'Code',
+            parent=styles['Normal'],
+            fontName='Courier',
+            fontSize=8,
+            backColor=colors.HexColor('#F5F5F5'),
+            borderPadding=5,
+        )
+        
+        # Process the markdown text
+        lines = markdown_text.split('\n')
+        i = 0
+        while i < len(lines):
+            line = lines[i].strip()
+            
+            # Handle headings
+            if line.startswith('# '):
+                elements.append(Paragraph(line[2:], title_style))
+                elements.append(Spacer(1, 12))
+            elif line.startswith('## '):
+                elements.append(Paragraph(line[3:], heading1_style))
+                elements.append(Spacer(1, 10))
+            elif line.startswith('### '):
+                elements.append(Paragraph(line[4:], heading2_style))
+                elements.append(Spacer(1, 8))
+            
+            # Handle tables
+            elif line.startswith('|') and '|' in line[1:]:
+                # Collect all table rows
+                table_data = []
+                table_row = line.split('|')
+                table_row = [cell.strip() for cell in table_row if cell.strip()]
+                table_data.append(table_row)
+                
+                # Move to next line
+                i += 1
+                if i < len(lines) and '---' in lines[i]:  # Skip separator row
+                    i += 1
+                
+                # Continue collecting table rows
+                while i < len(lines) and lines[i].strip().startswith('|'):
+                    table_row = lines[i].split('|')
+                    table_row = [cell.strip() for cell in table_row if cell.strip()]
+                    table_data.append(table_row)
+                    i += 1
+                
+                # Create the table
+                if table_data:
+                    # Make sure all rows have the same number of columns
+                    max_cols = max(len(row) for row in table_data)
+                    for row in table_data:
+                        while len(row) < max_cols:
+                            row.append('')
+                    
+                    table = Table(table_data)
+                    table.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#F5F5F5')),
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+                        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#E0E0E0')),
+                        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#F9F9F9')]),
+                    ]))
+                    elements.append(table)
+                    elements.append(Spacer(1, 12))
+                
+                # Continue without incrementing i since we already advanced it
+                continue
+            
+            # Handle code blocks
+            elif line.startswith('```'):
+                code_content = []
+                # Move to next line (first line of code)
+                i += 1
+                
+                # Continue collecting code lines until end marker
+                while i < len(lines) and not lines[i].startswith('```'):
+                    code_content.append(lines[i])
+                    i += 1
+                
+                # Skip the closing code marker
+                if i < len(lines):
+                    i += 1
+                
+                # Join code content and add as a paragraph with code style
+                if code_content:
+                    code_text = '<pre>' + '\n'.join(code_content) + '</pre>'
+                    elements.append(Paragraph(code_text, code_style))
+                    elements.append(Spacer(1, 12))
+                
+                # Continue without incrementing i since we already advanced it
+                continue
+            
+            # Handle normal paragraphs
+            elif line and not line.startswith(('- ', '* ', '1. ')):
+                # Check if this is a paragraph that continues on the next line
+                paragraph_text = line
+                next_idx = i + 1
+                while (next_idx < len(lines) and 
+                       lines[next_idx].strip() and 
+                       not lines[next_idx].strip().startswith(('# ', '## ', '### ', '- ', '* ', '1. ', '|', '```'))):
+                    paragraph_text += ' ' + lines[next_idx].strip()
+                    next_idx += 1
+                
+                elements.append(Paragraph(paragraph_text, normal_style))
+                elements.append(Spacer(1, 8))
+                
+                # Skip the lines we've already processed
+                i = next_idx - 1
+            
+            # Handle lists
+            elif line.startswith(('- ', '* ')):
+                list_items = []
+                list_items.append(line[2:])
+                
+                # Collect all list items
+                next_idx = i + 1
+                while next_idx < len(lines) and lines[next_idx].strip().startswith(('- ', '* ')):
+                    list_items.append(lines[next_idx].strip()[2:])
+                    next_idx += 1
+                
+                # Add list items with bullet points
+                for item in list_items:
+                    bullet_text = '• ' + item
+                    elements.append(Paragraph(bullet_text, normal_style))
+                
+                elements.append(Spacer(1, 8))
+                
+                # Skip the lines we've already processed
+                i = next_idx - 1
+            
+            # Move to next line
+            i += 1
+        
+        # Build the PDF
+        doc.build(elements)
+        
+        # Get the PDF data
+        pdf_data = buffer.getvalue()
+        buffer.close()
+        
+        return pdf_data
+        
+    except Exception as e:
+        st.warning(f"Error generating PDF: {e}")
+        return None
 
 # Main app section with card-like appearance
 st.markdown('<div style="background-color: #F5F5F5; padding: 2rem; border-radius: 12px; margin-top: 2rem;">', unsafe_allow_html=True)
@@ -695,7 +873,7 @@ if st.session_state["ocr_result"]:
                     st.markdown("Save the extracted text in your preferred format:")
                     
                     def create_download_link(data, filetype, filename, button_text):
-                        b64 = base64.b64encode(data.encode()).decode()
+                        b64 = base64.b64encode(data.encode() if isinstance(data, str) else data).decode()
                         href = f'<a href="data:{filetype};base64,{b64}" download="{filename}" style="text-decoration: none;">'
                         href += f'<div style="background-color: #F3F4F6; border-radius: 6px; padding: 0.5rem 1rem; display: inline-block; margin-right: 1rem; border: 1px solid #E0E0E0;">'
                         href += f'<span style="color: #5E35B1; font-weight: 500;">{button_text}</span></div></a>'
@@ -712,6 +890,15 @@ if st.session_state["ocr_result"]:
                     
                     # MD download
                     download_row += create_download_link(display_text, "text/markdown", f"{file_base_name}.md", "Markdown")
+                    
+                    # PDF download
+                    try:
+                        # Generate PDF from markdown
+                        pdf_data = create_pdf_from_markdown(display_text, file_base_name)
+                        if pdf_data:
+                            download_row += create_download_link(pdf_data, "application/pdf", f"{file_base_name}.pdf", "PDF")
+                    except Exception as e:
+                        st.warning(f"PDF generation unavailable: {e}")
                     
                     download_row += '</div>'
                     st.markdown(download_row, unsafe_allow_html=True)
