@@ -382,21 +382,42 @@ def create_pdf_from_markdown(markdown_text, file_name):
             borderPadding=5,
         )
         
+        # Sanitize the markdown text - thoroughly remove HTML-like tags that could cause errors
+        def sanitize_text(text):
+            # Replace HTML tags with escaped versions
+            text = re.sub(r'<([^>]+)>', r'&lt;\1&gt;', text)
+            
+            # Replace common problematic characters
+            replacements = {
+                '&': '&amp;',
+                '"': '&quot;',
+                "'": '&#39;',
+                '\u2028': ' ',  # Line separator
+                '\u2029': ' ',  # Paragraph separator
+            }
+            
+            for char, replacement in replacements.items():
+                text = text.replace(char, replacement)
+                
+            return text
+        
+        sanitized_text = sanitize_text(markdown_text)
+        
         # Process the markdown text
-        lines = markdown_text.split('\n')
+        lines = sanitized_text.split('\n')
         i = 0
         while i < len(lines):
             line = lines[i].strip()
             
             # Handle headings
             if line.startswith('# '):
-                elements.append(Paragraph(line[2:], title_style))
+                elements.append(Paragraph(sanitize_text(line[2:]), title_style))
                 elements.append(Spacer(1, 12))
             elif line.startswith('## '):
-                elements.append(Paragraph(line[3:], heading1_style))
+                elements.append(Paragraph(sanitize_text(line[3:]), heading1_style))
                 elements.append(Spacer(1, 10))
             elif line.startswith('### '):
-                elements.append(Paragraph(line[4:], heading2_style))
+                elements.append(Paragraph(sanitize_text(line[4:]), heading2_style))
                 elements.append(Spacer(1, 8))
             
             # Handle tables
@@ -404,7 +425,7 @@ def create_pdf_from_markdown(markdown_text, file_name):
                 # Collect all table rows
                 table_data = []
                 table_row = line.split('|')
-                table_row = [cell.strip() for cell in table_row if cell.strip()]
+                table_row = [sanitize_text(cell.strip()) for cell in table_row if cell.strip()]
                 table_data.append(table_row)
                 
                 # Move to next line
@@ -415,7 +436,7 @@ def create_pdf_from_markdown(markdown_text, file_name):
                 # Continue collecting table rows
                 while i < len(lines) and lines[i].strip().startswith('|'):
                     table_row = lines[i].split('|')
-                    table_row = [cell.strip() for cell in table_row if cell.strip()]
+                    table_row = [sanitize_text(cell.strip()) for cell in table_row if cell.strip()]
                     table_data.append(table_row)
                     i += 1
                 
@@ -452,7 +473,7 @@ def create_pdf_from_markdown(markdown_text, file_name):
                 
                 # Continue collecting code lines until end marker
                 while i < len(lines) and not lines[i].startswith('```'):
-                    code_content.append(lines[i])
+                    code_content.append(sanitize_text(lines[i]))
                     i += 1
                 
                 # Skip the closing code marker
@@ -479,8 +500,13 @@ def create_pdf_from_markdown(markdown_text, file_name):
                     paragraph_text += ' ' + lines[next_idx].strip()
                     next_idx += 1
                 
-                elements.append(Paragraph(paragraph_text, normal_style))
-                elements.append(Spacer(1, 8))
+                try:
+                    elements.append(Paragraph(sanitize_text(paragraph_text), normal_style))
+                    elements.append(Spacer(1, 8))
+                except Exception as e:
+                    # If a paragraph fails, try with an extra level of escaping
+                    elements.append(Paragraph(f"[Paragraph rendering error: {str(e)[:50]}...]", normal_style))
+                    elements.append(Spacer(1, 8))
                 
                 # Skip the lines we've already processed
                 i = next_idx - 1
@@ -498,8 +524,11 @@ def create_pdf_from_markdown(markdown_text, file_name):
                 
                 # Add list items with bullet points
                 for item in list_items:
-                    bullet_text = '• ' + item
-                    elements.append(Paragraph(bullet_text, normal_style))
+                    bullet_text = '• ' + sanitize_text(item)
+                    try:
+                        elements.append(Paragraph(bullet_text, normal_style))
+                    except Exception:
+                        elements.append(Paragraph('• [Item rendering error]', normal_style))
                 
                 elements.append(Spacer(1, 8))
                 
@@ -508,6 +537,12 @@ def create_pdf_from_markdown(markdown_text, file_name):
             
             # Move to next line
             i += 1
+        
+        # Add a title if none exists
+        if len(elements) == 0:
+            elements.append(Paragraph(f"{file_name} - Extracted Text", title_style))
+            elements.append(Spacer(1, 12))
+            elements.append(Paragraph("The document was processed successfully but may contain content that couldn't be fully rendered.", normal_style))
         
         # Build the PDF
         doc.build(elements)
@@ -892,16 +927,21 @@ if st.session_state["ocr_result"]:
                     download_row += create_download_link(display_text, "text/markdown", f"{file_base_name}.md", "Markdown")
                     
                     # PDF download
+                    pdf_error = None
                     try:
                         # Generate PDF from markdown
                         pdf_data = create_pdf_from_markdown(display_text, file_base_name)
                         if pdf_data:
                             download_row += create_download_link(pdf_data, "application/pdf", f"{file_base_name}.pdf", "PDF")
                     except Exception as e:
-                        st.warning(f"PDF generation unavailable: {e}")
+                        pdf_error = str(e)
                     
                     download_row += '</div>'
                     st.markdown(download_row, unsafe_allow_html=True)
+                    
+                    # Show PDF error below the download buttons if there was one
+                    if pdf_error:
+                        st.warning(f"PDF generation error: {pdf_error}")
                 
                 # Text preview with scrolling
                 st.markdown('<div style="height: 480px; overflow-y: auto; padding: 1rem; border-radius: 8px; border: 1px solid #E0E0E0; background-color: #FAFAFA; font-family: monospace;">', unsafe_allow_html=True)
