@@ -218,32 +218,40 @@ def split_pdf(pdf_bytes, chunk_size=100):
 # Main app section with card-like appearance
 st.markdown('<div style="background-color: #F5F5F5; padding: 2rem; border-radius: 12px; margin-top: 2rem;">', unsafe_allow_html=True)
 
-# 1. API Key Input with better styling
-st.markdown("## 🔑 API Key")
-st.markdown("Enter your Mistral API key to start processing documents.")
-api_key = st.text_input("Mistral API Key", type="password", placeholder="Enter your API key here")
-if not api_key:
-    st.info("👆 Please enter your API key above to continue.")
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Add additional information at the bottom
-    st.markdown("""
-    <div style="margin-top: 2rem;">
-        <h2>How to Get Started</h2>
-        <ol>
-            <li>Obtain a Mistral API key from <a href="https://console.mistral.ai/" target="_blank">console.mistral.ai</a></li>
-            <li>Enter your API key in the form above</li>
-            <li>Select your document type and upload method</li>
-            <li>Process your documents and download the extracted text</li>
-        </ol>
-    </div>
-    
-    <div class="footer">
-        <p>© 2024 Mistral OCR | Powered by Mistral AI</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.stop()
+# API Key handling - try to get from Streamlit secrets first
+api_key = None
+
+# Check if the API key is in Streamlit secrets
+if "MISTRAL_API_KEY" in st.secrets:
+    api_key = st.secrets["MISTRAL_API_KEY"]
+    st.success("✅ Mistral API key loaded from secrets")
+else:
+    # 1. API Key Input with better styling if not in secrets
+    st.markdown("## 🔑 API Key")
+    st.markdown("Enter your Mistral API key to start processing documents.")
+    api_key = st.text_input("Mistral API Key", type="password", placeholder="Enter your API key here")
+    if not api_key:
+        st.info("👆 Please enter your API key above to continue.")
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # Add additional information at the bottom
+        st.markdown("""
+        <div style="margin-top: 2rem;">
+            <h2>How to Get Started</h2>
+            <ol>
+                <li>Obtain a Mistral API key from <a href="https://console.mistral.ai/" target="_blank">console.mistral.ai</a></li>
+                <li>Enter your API key in the form above</li>
+                <li>Select your document type and upload method</li>
+                <li>Process your documents and download the extracted text</li>
+            </ol>
+        </div>
+        
+        <div class="footer">
+            <p>© 2024 Mistral OCR | Powered by Mistral AI</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.stop()
 
 # Initialize session state variables for persistence
 if "ocr_result" not in st.session_state:
