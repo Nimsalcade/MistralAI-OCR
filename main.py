@@ -10,132 +10,185 @@ import io
 
 # Set page configuration with a modern layout
 st.set_page_config(
-    layout="wide", 
-    page_title="Mistral OCR App", 
+    layout="wide",
+    page_title="Mistral OCR",
     page_icon="📝",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
-# Custom CSS for a cleaner, more modern look
+# Custom CSS for a more appealing UI
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-    
-    * {
-        font-family: 'Inter', sans-serif;
-    }
-    
+    /* Main app styling */
     .main .block-container {
         padding-top: 2rem;
         padding-bottom: 2rem;
     }
     
+    /* Headers */
     h1 {
-        font-weight: 700;
         color: #4527A0;
-        margin-bottom: 0.2rem;
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
     }
     
-    h2, h3 {
-        font-weight: 600;
+    h2 {
         color: #5E35B1;
+        font-weight: 600;
+        margin-top: 1.5rem;
     }
     
-    .stButton>button {
-        background-color: #673AB7;
-        color: white;
-        font-weight: 600;
+    h3 {
+        color: #673AB7;
+        font-weight: 500;
+    }
+    
+    /* Cards for features */
+    .feature-card {
+        background-color: #F3F4F6;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #5E35B1;
+    }
+    
+    .feature-card h4 {
+        color: #4527A0;
+        margin-top: 0;
+    }
+    
+    /* Input styling */
+    .stTextInput > div > div > input {
         border-radius: 6px;
-        padding: 0.5rem 1rem;
+    }
+    
+    .stFileUploader > div {
+        border-radius: 6px;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        background-color: #5E35B1;
+        color: white;
+        border-radius: 6px;
+        padding: 0.5rem 2rem;
+        font-weight: 500;
         border: none;
         transition: all 0.3s;
     }
     
-    .stButton>button:hover {
-        background-color: #5E35B1;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    .stButton > button:hover {
+        background-color: #4527A0;
         transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(94, 53, 177, 0.25);
     }
     
-    .card {
-        background-color: #FFFFFF;
-        border-radius: 8px;
-        padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        margin-bottom: 1rem;
+    /* Results section */
+    .results-section {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #E0E0E0;
     }
     
-    .result-card {
-        border-left: 4px solid #673AB7;
-        background-color: #F8F9FA;
-    }
-    
-    .stExpander {
-        border: 1px solid #EEEEEE;
-        border-radius: 8px;
-    }
-    
+    /* Footer */
     .footer {
-        text-align: center;
         margin-top: 3rem;
-        color: #666;
+        padding-top: 1rem;
+        text-align: center;
+        border-top: 1px solid #E0E0E0;
+        color: #9E9E9E;
         font-size: 0.8rem;
     }
     
-    .success-msg {
-        background-color: #E8F5E9;
-        padding: 1rem;
+    /* Custom expander styling */
+    .custom-expander {
+        border: 1px solid #E0E0E0;
         border-radius: 8px;
-        border-left: 4px solid #4CAF50;
-        margin: 1rem 0;
+        margin-bottom: 1rem;
     }
     
-    .info-msg {
+    /* Status badges */
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 16px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        margin-right: 0.5rem;
+    }
+    
+    .badge-pdf {
         background-color: #E3F2FD;
-        padding: 1rem;
-        border-radius: 8px;
-        border-left: 4px solid #2196F3;
-        margin: 1rem 0;
+        color: #1565C0;
     }
     
-    .warning-msg {
-        background-color: #FFF8E1;
-        padding: 1rem;
+    .badge-image {
+        background-color: #E8F5E9;
+        color: #2E7D32;
+    }
+    
+    /* Make iframe and images corners rounded */
+    iframe, img {
         border-radius: 8px;
-        border-left: 4px solid #FFC107;
-        margin: 1rem 0;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# Modern app header with icon
+# App header with logo and title
 col1, col2 = st.columns([1, 5])
 with col1:
-    st.markdown('<div style="font-size:3.2rem; text-align:center; color:#673AB7;">📝</div>', unsafe_allow_html=True)
+    st.markdown('<div style="display: flex; justify-content: center; align-items: center; height: 100%;">'
+                '<span style="font-size: 3.5rem;">📝</span></div>', unsafe_allow_html=True)
 with col2:
-    st.title("Mistral OCR App")
-    st.markdown("<p style='color:#666; margin-top:-0.5rem;'>Extract text from PDFs and images with AI-powered accuracy</p>", unsafe_allow_html=True)
+    st.title("Mistral OCR")
+    st.markdown('<p style="font-size: 1.2rem; margin-top: -0.8rem; color: #5E35B1;">Extract text from PDFs and images with powerful AI</p>', unsafe_allow_html=True)
 
-# Credit
-st.markdown(
-    "<div style='font-size:0.8rem; color:#666;'>Built by <a href='https://github.com/AIAnytime' style='color:#673AB7; text-decoration:none;'>AI Anytime</a> | "
-    "Enhanced by <a href='https://github.com/Nimsalcade' style='color:#673AB7; text-decoration:none;'>Nimsalcade</a></div>", 
-    unsafe_allow_html=True
-)
+# App description card
+st.markdown("""
+<div class="feature-card" style="background-color: #EDE7F6; margin-bottom: 2rem;">
+    <h3 style="margin-top: 0;">Transform Documents into Text in Seconds</h3>
+    <p>
+        Mistral OCR leverages advanced AI to extract text from PDFs and images with high accuracy. 
+        Upload files directly or provide URLs, then download the extracted text in multiple formats.
+    </p>
+</div>
+""", unsafe_allow_html=True)
 
-# App description
-with st.expander("ℹ️ About this app"):
-    st.markdown("""
-    This application uses **Mistral AI's OCR technology** to extract text from documents and images.
+# Features section
+with st.container():
+    st.markdown("## ✨ Key Features")
+    col1, col2 = st.columns(2)
     
-    **Features:**
-    * Process both PDFs and images
-    * Upload local files or provide URLs
-    * Automatic splitting of large PDFs
-    * Quick download in multiple formats
+    with col1:
+        st.markdown("""
+        <div class="feature-card">
+            <h4>PDF & Image Support</h4>
+            <p>Extract text from both PDFs and images with a single tool.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="feature-card">
+            <h4>URL & File Upload</h4>
+            <p>Process documents from URLs or upload files directly from your device.</p>
+        </div>
+        """, unsafe_allow_html=True)
     
-    To use this app, enter your Mistral API key below, select your document type and source, then click 'Process'.
-    """)
+    with col2:
+        st.markdown("""
+        <div class="feature-card">
+            <h4>Large PDF Processing</h4>
+            <p>Automatically splits and processes large PDFs with hundreds of pages.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="feature-card">
+            <h4>Multiple Export Formats</h4>
+            <p>Download results as JSON, TXT, or Markdown files.</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 # Function to split large PDFs into smaller chunks
 def split_pdf(pdf_bytes, chunk_size=100):
@@ -162,16 +215,34 @@ def split_pdf(pdf_bytes, chunk_size=100):
     
     return chunks
 
-# Card-style container for API key input
-st.markdown('<div class="card">', unsafe_allow_html=True)
-# 1. API Key Input
-api_key = st.text_input("🔑 Enter your Mistral API Key", type="password", help="Your API key is kept private and not stored")
-st.markdown('</div>', unsafe_allow_html=True)
+# Main app section with card-like appearance
+st.markdown('<div style="background-color: #F5F5F5; padding: 2rem; border-radius: 12px; margin-top: 2rem;">', unsafe_allow_html=True)
 
+# 1. API Key Input with better styling
+st.markdown("## 🔑 API Key")
+st.markdown("Enter your Mistral API key to start processing documents.")
+api_key = st.text_input("Mistral API Key", type="password", placeholder="Enter your API key here")
 if not api_key:
-    st.markdown('<div class="info-msg">⚠️ Please enter your API key to continue.</div>', unsafe_allow_html=True)
-    # Add a sample image to make the empty state more appealing
-    st.image("https://i.imgur.com/ymjJLri.png", caption="Sample OCR Processing", use_column_width=True)
+    st.info("👆 Please enter your API key above to continue.")
+    st.markdown("</div>", unsafe_allow_html=True)
+    
+    # Add additional information at the bottom
+    st.markdown("""
+    <div style="margin-top: 2rem;">
+        <h2>How to Get Started</h2>
+        <ol>
+            <li>Obtain a Mistral API key from <a href="https://console.mistral.ai/" target="_blank">console.mistral.ai</a></li>
+            <li>Enter your API key in the form above</li>
+            <li>Select your document type and upload method</li>
+            <li>Process your documents and download the extracted text</li>
+        </ol>
+    </div>
+    
+    <div class="footer">
+        <p>© 2024 Mistral OCR | Powered by Mistral AI</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
     st.stop()
 
 # Initialize session state variables for persistence
@@ -184,89 +255,116 @@ if "image_bytes" not in st.session_state:
 if "file_names" not in st.session_state:
     st.session_state["file_names"] = []
 
-# Input options in a card container
-st.markdown('<div class="card">', unsafe_allow_html=True)
+# 2. Document Type Selection with visual indicators
+st.markdown("## 📄 Document Type")
+file_type_col1, file_type_col2 = st.columns(2)
+with file_type_col1:
+    file_type = st.radio("Select document type", ("PDF", "Image"))
+    st.markdown(f"""
+    <div style="margin-top: 0.5rem;">
+        <span class="status-badge badge-{'pdf' if file_type == 'PDF' else 'image'}">
+            {file_type} Selected
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
 
-# Two columns for input options
-col1, col2 = st.columns(2)
+# 3. Source Selection with better organization
+st.markdown("## 📦 Document Source")
+source_type_col1, source_type_col2 = st.columns(2)
+with source_type_col1:
+    source_type = st.radio("Select source type", ("URL", "Local Upload"))
+    st.markdown(f"""
+    <div style="margin-top: 0.5rem;">
+        <span class="status-badge" style="background-color: #EDE7F6; color: #5E35B1;">
+            {source_type}
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
 
-with col1:
-    # 2. Choose file type: PDF or Image
-    file_type = st.radio("📄 Select document type", ("PDF", "Image"), horizontal=True)
-
-with col2:
-    # 3. Select source type: URL or Local Upload
-    source_type = st.radio("📂 Select source", ("Upload File", "Enter URL"), horizontal=True)
-
-# PDF Chunk Size Configuration
+# PDF Chunk Size Configuration with better UI
 if file_type == "PDF":
     with st.expander("⚙️ Advanced PDF Settings"):
-        chunk_size = st.slider("Pages per chunk for large PDFs", 50, 200, 100, 
+        st.markdown("Configure how large PDFs are processed:")
+        chunk_size = st.slider("Pages per chunk", 50, 200, 100, 
                               help="For PDFs with many pages, the document will be automatically split into chunks of this many pages")
+        st.caption("Large PDFs will be split into chunks to optimize processing.")
 
+# Input fields based on selection
 input_url = ""
 uploaded_files = []
 
-# File input section
-if source_type == "Enter URL":
-    input_url = st.text_area("🔗 Enter one or multiple URLs (separate with new lines)", 
-                            placeholder="https://example.com/document.pdf")
+if source_type == "URL":
+    st.markdown("### Enter Document URLs")
+    input_url = st.text_area("One URL per line", 
+                             placeholder="https://example.com/document.pdf\nhttps://example.com/image.jpg")
+    if file_type == "PDF":
+        st.caption("Supported formats: PDF files from public URLs")
+    else:
+        st.caption("Supported formats: JPG, JPEG, PNG images from public URLs")
 else:
+    st.markdown("### Upload Documents")
     file_types = ["pdf"] if file_type == "PDF" else ["jpg", "jpeg", "png"]
-    uploaded_files = st.file_uploader(f"📤 Upload {file_type} file(s)", 
-                                    type=file_types, 
-                                    accept_multiple_files=True)
-    if not uploaded_files:
-        st.info(f"Please upload one or more {file_type.lower()} files to process")
+    uploaded_files = st.file_uploader(f"Upload {file_type} files", 
+                                      type=file_types, 
+                                      accept_multiple_files=True)
+    st.caption(f"Drag and drop your {', '.join(file_types).upper()} files here")
 
-st.markdown('</div>', unsafe_allow_html=True)
+# Process button with improved styling
+st.markdown("## 🚀 Process Documents")
+process_button = st.button("Extract Text", use_container_width=True)
 
 # 4. Process Button & OCR Handling
-process_button = st.button("🔍 Process Document", type="primary", use_container_width=True)
-
 if process_button:
-    if source_type == "Enter URL" and not input_url.strip():
-        st.markdown('<div class="warning-msg">⚠️ Please enter at least one valid URL.</div>', unsafe_allow_html=True)
-    elif source_type == "Upload File" and not uploaded_files:
-        st.markdown('<div class="warning-msg">⚠️ Please upload at least one file.</div>', unsafe_allow_html=True)
+    if source_type == "URL" and not input_url.strip():
+        st.error("⚠️ Please enter at least one valid URL.")
+    elif source_type == "Local Upload" and not uploaded_files:
+        st.error(f"⚠️ Please upload at least one {file_type.lower()} file.")
     else:
-        client = Mistral(api_key=api_key)
+        with st.spinner("Connecting to Mistral AI..."):
+            client = Mistral(api_key=api_key)
+        
         st.session_state["ocr_result"] = []
         st.session_state["preview_src"] = []
         st.session_state["image_bytes"] = []
         st.session_state["file_names"] = []
         
-        sources = input_url.split("\n") if source_type == "Enter URL" else uploaded_files
+        sources = input_url.split("\n") if source_type == "URL" else uploaded_files
         
-        overall_progress = st.progress(0, "Starting processing...")
+        # Create a progress bar
+        progress_bar = st.progress(0)
+        progress_text = st.empty()
         
         for idx, source in enumerate(sources):
-            # Calculate progress percentage
-            progress_value = idx / len(sources)
-            overall_progress.progress(progress_value, f"Processing file {idx+1} of {len(sources)}")
+            # Update progress
+            progress_percentage = int((idx) / len(sources) * 100)
+            progress_bar.progress(progress_percentage)
             
             # Store original filename
-            if source_type == "Enter URL":
+            if source_type == "URL":
                 # For URLs, extract filename from the end of the URL
                 file_name = source.strip().split("/")[-1]
+                display_name = source.strip()
                 # If no clear filename, use a default with index
                 if not file_name or "." not in file_name:
                     file_name = f"url_document_{idx+1}"
             else:
                 # For uploaded files, use the original filename
                 file_name = source.name
+                display_name = source.name
             
             # Store filename without extension for later use
             base_name = os.path.splitext(file_name)[0]
             st.session_state["file_names"].append(base_name)
             
+            progress_text.markdown(f"Processing **{display_name}**...")
+            
             if file_type == "PDF":
-                if source_type == "Enter URL":
+                if source_type == "URL":
                     document = {"type": "document_url", "document_url": source.strip()}
                     preview_src = source.strip()
                     st.session_state["preview_src"].append(preview_src)
                     
-                    with st.spinner(f"Processing {source}..."):
+                    with st.spinner(f"Extracting text from {display_name}..."):
                         try:
                             ocr_response = client.ocr.process(model="mistral-ocr-latest", document=document, include_image_base64=True)
                             time.sleep(1)  # wait 1 second between request to prevent rate limit exceeding
@@ -287,34 +385,39 @@ if process_button:
                     total_pages = len(pdf_reader.pages)
                     
                     if total_pages > chunk_size:
-                        st.markdown(f'<div class="info-msg">📊 Splitting {source.name} ({total_pages} pages) into smaller chunks...</div>', unsafe_allow_html=True)
+                        st.info(f"📄 Splitting **{display_name}** ({total_pages} pages) into smaller chunks...")
                         pdf_chunks = split_pdf(file_bytes, chunk_size)
                         all_results = []
                         
-                        chunk_progress = st.progress(0, "Processing chunks...")
+                        # Create a sub-progress bar for chunks
+                        chunk_progress = st.progress(0)
+                        chunk_text = st.empty()
                         
                         for i, chunk in enumerate(pdf_chunks):
-                            # Update chunk progress
-                            chunk_progress_value = (i + 1) / len(pdf_chunks)
-                            chunk_progress.progress(chunk_progress_value, f"Chunk {i+1}/{len(pdf_chunks)}")
+                            chunk_percentage = int((i) / len(pdf_chunks) * 100)
+                            chunk_progress.progress(chunk_percentage)
+                            chunk_text.markdown(f"Processing chunk {i+1}/{len(pdf_chunks)} (pages {i*chunk_size+1}-{min((i+1)*chunk_size, total_pages)})...")
                             
-                            with st.spinner(f"Processing chunk {i+1}/{len(pdf_chunks)} of {source.name}..."):
-                                try:
-                                    encoded_pdf = base64.b64encode(chunk).decode("utf-8")
-                                    document = {"type": "document_url", "document_url": f"data:application/pdf;base64,{encoded_pdf}"}
-                                    
-                                    ocr_response = client.ocr.process(model="mistral-ocr-latest", document=document, include_image_base64=True)
-                                    time.sleep(1)  # wait 1 second between request to prevent rate limit exceeding
-                                    
-                                    pages = ocr_response.pages if hasattr(ocr_response, "pages") else (ocr_response if isinstance(ocr_response, list) else [])
-                                    chunk_text = "\n\n".join(page.markdown for page in pages) or ""
-                                    all_results.append(chunk_text)
-                                except Exception as e:
-                                    all_results.append(f"Error extracting result for chunk {i+1}: {e}")
+                            try:
+                                encoded_pdf = base64.b64encode(chunk).decode("utf-8")
+                                document = {"type": "document_url", "document_url": f"data:application/pdf;base64,{encoded_pdf}"}
+                                
+                                ocr_response = client.ocr.process(model="mistral-ocr-latest", document=document, include_image_base64=True)
+                                time.sleep(1)  # wait 1 second between request to prevent rate limit exceeding
+                                
+                                pages = ocr_response.pages if hasattr(ocr_response, "pages") else (ocr_response if isinstance(ocr_response, list) else [])
+                                chunk_text_result = "\n\n".join(page.markdown for page in pages) or ""
+                                all_results.append(chunk_text_result)
+                            except Exception as e:
+                                all_results.append(f"Error extracting result for chunk {i+1}: {e}")
+                        
+                        # Clean up chunk progress indicators
+                        chunk_progress.empty()
+                        chunk_text.empty()
                         
                         result_text = "\n\n".join(all_results)
                     else:
-                        with st.spinner(f"Processing {source.name}..."):
+                        with st.spinner(f"Extracting text from {display_name}..."):
                             try:
                                 encoded_pdf = base64.b64encode(file_bytes).decode("utf-8")
                                 document = {"type": "document_url", "document_url": f"data:application/pdf;base64,{encoded_pdf}"}
@@ -329,7 +432,7 @@ if process_button:
                     
                     st.session_state["ocr_result"].append(result_text)
             else:
-                if source_type == "Enter URL":
+                if source_type == "URL":
                     document = {"type": "image_url", "image_url": source.strip()}
                     preview_src = source.strip()
                 else:
@@ -340,7 +443,7 @@ if process_button:
                     preview_src = f"data:{mime_type};base64,{encoded_image}"
                     st.session_state["image_bytes"].append(file_bytes)
             
-                with st.spinner(f"Processing {source if source_type == 'Enter URL' else source.name}..."):
+                with st.spinner(f"Extracting text from {display_name}..."):
                     try:
                         ocr_response = client.ocr.process(model="mistral-ocr-latest", document=document, include_image_base64=True)
                         time.sleep(1)  # wait 1 second between request to prevent rate limit exceeding
@@ -353,65 +456,99 @@ if process_button:
                 st.session_state["ocr_result"].append(result_text)
                 st.session_state["preview_src"].append(preview_src)
         
-        # Complete the progress and show success message
-        overall_progress.progress(1.0, "Processing complete!")
-        st.markdown('<div class="success-msg">✅ Document processing complete! Results are displayed below.</div>', unsafe_allow_html=True)
+        # Complete the progress
+        progress_bar.progress(100)
+        progress_text.markdown("✅ Processing complete!")
+        time.sleep(1)
+        progress_bar.empty()
+        progress_text.empty()
+        
+        st.success("🎉 Text extraction complete! Results are shown below.")
+
+# Close the main app container
+st.markdown('</div>', unsafe_allow_html=True)
 
 # 5. Display Preview and OCR Results if available
 if st.session_state["ocr_result"]:
-    for idx, result in enumerate(st.session_state["ocr_result"]):
-        # Get filename for output
-        if idx < len(st.session_state["file_names"]):
-            file_base_name = st.session_state["file_names"][idx]
-        else:
-            file_base_name = f"Output_{idx+1}"
-        
-        st.markdown(f"### Document {idx+1}: {file_base_name}")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
-            st.subheader("📄 Document Preview")
-            if file_type == "PDF":
-                pdf_embed_html = f'<iframe src="{st.session_state["preview_src"][idx]}" width="100%" height="600" frameborder="0"></iframe>'
-                st.markdown(pdf_embed_html, unsafe_allow_html=True)
+    st.markdown('<div class="results-section">', unsafe_allow_html=True)
+    st.markdown("## 📋 Results")
+    
+    # Create tabs for each document
+    if len(st.session_state["ocr_result"]) > 1:
+        tabs = st.tabs([f"Document {idx+1}: {name}" for idx, name in enumerate(st.session_state["file_names"])])
+    else:
+        tabs = [st.container()]
+    
+    for idx, (result, tab) in enumerate(zip(st.session_state["ocr_result"], tabs)):
+        with tab:
+            # Get filename for output
+            if idx < len(st.session_state["file_names"]):
+                file_base_name = st.session_state["file_names"][idx]
             else:
-                if source_type == "Upload File" and len(st.session_state["image_bytes"]) > idx:
-                    st.image(st.session_state["image_bytes"][idx], caption=file_base_name, use_column_width=True)
+                file_base_name = f"Document_{idx+1}"
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown(f"### Original Document")
+                
+                if file_type == "PDF":
+                    with st.container():
+                        pdf_embed_html = f'<iframe src="{st.session_state["preview_src"][idx]}" width="100%" height="600" frameborder="0" style="border-radius: 8px; border: 1px solid #E0E0E0;"></iframe>'
+                        st.markdown(pdf_embed_html, unsafe_allow_html=True)
                 else:
-                    st.image(st.session_state["preview_src"][idx], caption=file_base_name, use_column_width=True)
-            st.markdown('</div>', unsafe_allow_html=True)
+                    if source_type == "Local Upload" and st.session_state["image_bytes"]:
+                        st.image(st.session_state["image_bytes"][idx], use_column_width=True)
+                    else:
+                        st.image(st.session_state["preview_src"][idx], use_column_width=True)
             
-        with col2:
-            st.markdown('<div class="card result-card">', unsafe_allow_html=True)
-            st.subheader("📋 Extracted Text")
-            
-            # Result tabs
-            tab1, tab2 = st.tabs(["Text", "Download Options"])
-            
-            with tab1:
-                st.markdown(f"<div style='height: 550px; overflow-y: auto; padding: 1rem;'>{result}</div>", unsafe_allow_html=True)
-            
-            with tab2:
-                st.markdown("### Download Results")
+            with col2:
+                st.markdown(f"### Extracted Text")
                 
-                def create_download_link(data, filetype, filename, icon, description):
-                    b64 = base64.b64encode(data.encode()).decode()
-                    href = f'<a href="data:{filetype};base64,{b64}" download="{filename}" style="text-decoration:none;"><div style="display:flex; align-items:center; padding:0.5rem; background-color:#F5F5F5; border-radius:5px; margin-bottom:0.5rem;"><div style="font-size:1.5rem; margin-right:0.5rem;">{icon}</div><div><strong>{filename}</strong><br><span style="font-size:0.8rem; color:#666;">{description}</span></div></div></a>'
-                    st.markdown(href, unsafe_allow_html=True)
+                # Download section with better UI
+                with st.expander("💾 Download Options", expanded=True):
+                    st.markdown("Save the extracted text in your preferred format:")
+                    
+                    def create_download_link(data, filetype, filename, button_text):
+                        b64 = base64.b64encode(data.encode()).decode()
+                        href = f'<a href="data:{filetype};base64,{b64}" download="{filename}" style="text-decoration: none;">'
+                        href += f'<div style="background-color: #F3F4F6; border-radius: 6px; padding: 0.5rem 1rem; display: inline-block; margin-right: 1rem; border: 1px solid #E0E0E0;">'
+                        href += f'<span style="color: #5E35B1; font-weight: 500;">{button_text}</span></div></a>'
+                        return href
+                    
+                    download_row = '<div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">'
+                    
+                    # JSON download
+                    json_data = json.dumps({"ocr_result": result}, ensure_ascii=False, indent=2)
+                    download_row += create_download_link(json_data, "application/json", f"{file_base_name}.json", "JSON")
+                    
+                    # TXT download
+                    download_row += create_download_link(result, "text/plain", f"{file_base_name}.txt", "TXT")
+                    
+                    # MD download
+                    download_row += create_download_link(result, "text/markdown", f"{file_base_name}.md", "Markdown")
+                    
+                    download_row += '</div>'
+                    st.markdown(download_row, unsafe_allow_html=True)
                 
-                json_data = json.dumps({"ocr_result": result}, ensure_ascii=False, indent=2)
-                create_download_link(json_data, "application/json", f"{file_base_name}.json", "📊", "Structured JSON format")
-                create_download_link(result, "text/plain", f"{file_base_name}.txt", "📝", "Plain text format")
-                create_download_link(result, "text/markdown", f"{file_base_name}.md", "📄", "Markdown format")
-            
-            st.markdown('</div>', unsafe_allow_html=True)
+                # Text preview with scrolling
+                st.markdown('<div style="height: 480px; overflow-y: auto; padding: 1rem; border-radius: 8px; border: 1px solid #E0E0E0; background-color: #FAFAFA; font-family: monospace;">', unsafe_allow_html=True)
+                st.markdown(result)
+                st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Add a clear results button
+    if st.button("Clear Results", key="clear_results"):
+        st.session_state["ocr_result"] = []
+        st.session_state["preview_src"] = []
+        st.session_state["image_bytes"] = []
+        st.session_state["file_names"] = []
+        st.experimental_rerun()
 
-# Footer
+# Footer section
 st.markdown("""
 <div class="footer">
-    <p>Powered by <a href="https://docs.mistralai.com/" target="_blank" style="color:#673AB7; text-decoration:none;">Mistral AI OCR</a> | 
-    <a href="https://github.com/Nimsalcade/MistralAI-OCR" target="_blank" style="color:#673AB7; text-decoration:none;">GitHub Repository</a></p>
+    <p>© 2024 Mistral OCR | Powered by Mistral AI</p>
 </div>
 """, unsafe_allow_html=True)
