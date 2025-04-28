@@ -1,5 +1,5 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "https://mistralocrai.streamlit.app/$1" }
+    { "source": "/(.*)", "destination": "https://nimsalcade-mistralai-ocr.streamlit.app/$1" }
   ]
 } 
