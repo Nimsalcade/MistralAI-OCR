@@ -20,172 +20,595 @@ from reportlab.lib.units import inch
 st.set_page_config(
     layout="wide",
     page_title="Mistral OCR",
-    page_icon="📝",
-    initial_sidebar_state="expanded"
+    page_icon="✦",
+    initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for a more appealing UI
+# Custom CSS for a stunning, modern UI
 st.markdown("""
 <style>
-    /* Main app styling */
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
+    /* Import fonts */
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500&display=swap');
+    
+    /* Root variables */
+    :root {
+        --bg-primary: #0a0a0b;
+        --bg-secondary: #111113;
+        --bg-card: rgba(255, 255, 255, 0.03);
+        --bg-card-hover: rgba(255, 255, 255, 0.06);
+        --border-color: rgba(255, 255, 255, 0.08);
+        --text-primary: #fafafa;
+        --text-secondary: #a1a1aa;
+        --text-muted: #71717a;
+        --accent-orange: #f97316;
+        --accent-orange-glow: rgba(249, 115, 22, 0.15);
+        --accent-teal: #14b8a6;
+        --accent-rose: #f43f5e;
+        --gradient-start: #f97316;
+        --gradient-end: #fb923c;
     }
     
-    /* Headers */
+    /* Global styles */
+    .stApp {
+        background: linear-gradient(180deg, #0a0a0b 0%, #0f0f11 50%, #0a0a0b 100%);
+        font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    
+    .main .block-container {
+        padding: 2rem 3rem 4rem 3rem;
+        max-width: 1400px;
+    }
+    
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Typography */
+    h1, h2, h3, h4, h5, h6, p, span, div, label {
+        font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }
+    
     h1 {
-        color: #4527A0;
+        background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         font-weight: 700;
-        font-size: 2.5rem;
-        margin-bottom: 0.5rem;
+        font-size: 3rem !important;
+        letter-spacing: -0.03em;
+        margin-bottom: 0 !important;
     }
     
     h2 {
-        color: #5E35B1;
+        color: var(--text-primary) !important;
         font-weight: 600;
-        margin-top: 1.5rem;
+        font-size: 1.5rem !important;
+        letter-spacing: -0.02em;
+        margin-top: 2.5rem !important;
+        margin-bottom: 1rem !important;
     }
     
     h3 {
-        color: #673AB7;
+        color: var(--text-primary) !important;
         font-weight: 500;
+        font-size: 1.1rem !important;
     }
     
-    /* Cards for features */
+    p, .stMarkdown {
+        color: var(--text-secondary) !important;
+    }
+    
+    /* Hero section */
+    .hero-container {
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(20, 184, 166, 0.05) 100%);
+        border: 1px solid rgba(249, 115, 22, 0.2);
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.5), transparent);
+    }
+    
+    .hero-title {
+        font-size: 1.4rem !important;
+        font-weight: 600;
+        color: #fafafa !important;
+        margin-bottom: 0.75rem !important;
+    }
+    
+    .hero-subtitle {
+        color: #a1a1aa !important;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+    
+    /* Feature cards - glass morphism */
     .feature-card {
-        background-color: #F3F4F6;
-        border-radius: 8px;
-        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 16px;
+        padding: 1.75rem;
         margin-bottom: 1rem;
-        border-left: 4px solid #5E35B1;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feature-card:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(249, 115, 22, 0.3);
+        transform: translateY(-2px);
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 3px;
+        height: 100%;
+        background: linear-gradient(180deg, var(--accent-orange) 0%, var(--accent-teal) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .feature-card:hover::before {
+        opacity: 1;
     }
     
     .feature-card h4 {
-        color: #4527A0;
-        margin-top: 0;
+        color: #fafafa !important;
+        font-weight: 600;
+        font-size: 1rem;
+        margin: 0 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
     
-    /* Input styling */
-    .stTextInput > div > div > input {
-        border-radius: 6px;
+    .feature-card p {
+        color: #71717a !important;
+        font-size: 0.9rem;
+        margin: 0;
+        line-height: 1.5;
     }
     
+    .feature-icon {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, var(--accent-orange) 0%, var(--accent-teal) 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Section container */
+    .section-container {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+    
+    /* Input styling - force dark theme */
+    .stTextInput input,
+    .stTextInput > div > div > input,
+    .stTextArea textarea,
+    .stTextArea > div > div > textarea,
+    [data-testid="stTextInput"] input,
+    [data-testid="stTextArea"] textarea {
+        background: #1a1a1c !important;
+        background-color: #1a1a1c !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        border-radius: 12px !important;
+        color: #fafafa !important;
+        font-family: 'DM Sans', sans-serif !important;
+        padding: 0.875rem 1rem !important;
+        transition: all 0.2s ease !important;
+        caret-color: #f97316 !important;
+    }
+    
+    .stTextInput input:focus,
+    .stTextInput > div > div > input:focus,
+    .stTextArea textarea:focus,
+    .stTextArea > div > div > textarea:focus {
+        border-color: var(--accent-orange) !important;
+        box-shadow: 0 0 0 3px var(--accent-orange-glow) !important;
+        background: #1a1a1c !important;
+    }
+    
+    .stTextInput input::placeholder,
+    .stTextInput > div > div > input::placeholder,
+    .stTextArea textarea::placeholder,
+    .stTextArea > div > div > textarea::placeholder {
+        color: #71717a !important;
+        opacity: 1 !important;
+    }
+    
+    /* Force text color on all input descendants */
+    .stTextInput *,
+    .stTextArea * {
+        color: #fafafa !important;
+    }
+    
+    /* Label styling */
+    .stTextInput label,
+    .stTextArea label {
+        color: #a1a1aa !important;
+    }
+    
+    /* File uploader */
     .stFileUploader > div {
-        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 2px dashed rgba(255, 255, 255, 0.1) !important;
+        border-radius: 16px !important;
+        padding: 2rem !important;
+        transition: all 0.3s ease !important;
     }
     
-    /* Button styling */
+    .stFileUploader > div:hover {
+        border-color: var(--accent-orange) !important;
+        background: rgba(249, 115, 22, 0.05) !important;
+    }
+    
+    .stFileUploader label {
+        color: var(--text-secondary) !important;
+    }
+    
+    /* Radio buttons */
+    .stRadio > div {
+        gap: 0.5rem;
+    }
+    
+    .stRadio > div > label {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 10px !important;
+        padding: 0.75rem 1.25rem !important;
+        color: var(--text-secondary) !important;
+        transition: all 0.2s ease !important;
+        cursor: pointer;
+    }
+    
+    .stRadio > div > label:hover {
+        background: rgba(255, 255, 255, 0.06) !important;
+        border-color: rgba(255, 255, 255, 0.15) !important;
+    }
+    
+    .stRadio > div > label[data-baseweb="radio"]:has(input:checked) {
+        background: rgba(249, 115, 22, 0.1) !important;
+        border-color: var(--accent-orange) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    /* Primary button */
     .stButton > button {
-        background-color: #5E35B1;
-        color: white;
-        border-radius: 6px;
-        padding: 0.5rem 2rem;
-        font-weight: 500;
-        border: none;
-        transition: all 0.3s;
+        background: linear-gradient(135deg, var(--accent-orange) 0%, #ea580c 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 0.875rem 2rem !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        font-family: 'DM Sans', sans-serif !important;
+        letter-spacing: -0.01em;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.25) !important;
     }
     
     .stButton > button:hover {
-        background-color: #4527A0;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(94, 53, 177, 0.25);
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(249, 115, 22, 0.35) !important;
     }
     
-    /* Results section */
-    .results-section {
-        margin-top: 2rem;
-        padding-top: 1rem;
-        border-top: 1px solid #E0E0E0;
-    }
-    
-    /* Footer */
-    .footer {
-        margin-top: 3rem;
-        padding-top: 1rem;
-        text-align: center;
-        border-top: 1px solid #E0E0E0;
-        color: #9E9E9E;
-        font-size: 0.8rem;
-    }
-    
-    /* Custom expander styling */
-    .custom-expander {
-        border: 1px solid #E0E0E0;
-        border-radius: 8px;
-        margin-bottom: 1rem;
+    .stButton > button:active {
+        transform: translateY(0) !important;
     }
     
     /* Status badges */
     .status-badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.375rem 0.875rem;
+        border-radius: 20px;
         font-size: 0.8rem;
         font-weight: 500;
-        margin-right: 0.5rem;
+        letter-spacing: 0.01em;
     }
     
     .badge-pdf {
-        background-color: #E3F2FD;
-        color: #1565C0;
+        background: rgba(59, 130, 246, 0.1);
+        color: #60a5fa;
+        border: 1px solid rgba(59, 130, 246, 0.2);
     }
     
     .badge-image {
-        background-color: #E8F5E9;
-        color: #2E7D32;
+        background: rgba(34, 197, 94, 0.1);
+        color: #4ade80;
+        border: 1px solid rgba(34, 197, 94, 0.2);
     }
     
-    /* Make iframe and images corners rounded */
-    iframe, img {
-        border-radius: 8px;
+    .badge-url {
+        background: rgba(168, 85, 247, 0.1);
+        color: #c084fc;
+        border: 1px solid rgba(168, 85, 247, 0.2);
     }
     
-    /* Table formatting */
+    .badge-upload {
+        background: rgba(20, 184, 166, 0.1);
+        color: #2dd4bf;
+        border: 1px solid rgba(20, 184, 166, 0.2);
+    }
+    
+    /* Results section */
+    .results-section {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background: rgba(255, 255, 255, 0.02) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-radius: 12px !important;
+        color: var(--text-primary) !important;
+        font-weight: 500 !important;
+    }
+    
+    .streamlit-expanderContent {
+        background: rgba(255, 255, 255, 0.01) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-top: none !important;
+        border-radius: 0 0 12px 12px !important;
+    }
+    
+    /* Slider */
+    .stSlider > div > div > div {
+        background: var(--accent-orange) !important;
+    }
+    
+    /* Checkbox */
+    .stCheckbox > label {
+        color: var(--text-secondary) !important;
+    }
+    
+    /* Progress bar */
+    .stProgress > div > div > div {
+        background: linear-gradient(90deg, var(--accent-orange) 0%, var(--accent-teal) 100%) !important;
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 0.5rem;
+        background: transparent;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-radius: 10px !important;
+        color: var(--text-secondary) !important;
+        padding: 0.75rem 1.25rem !important;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: rgba(249, 115, 22, 0.1) !important;
+        border-color: var(--accent-orange) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    /* Success/Info/Warning messages */
+    .stSuccess {
+        background: rgba(34, 197, 94, 0.1) !important;
+        border: 1px solid rgba(34, 197, 94, 0.2) !important;
+        border-radius: 12px !important;
+        color: #4ade80 !important;
+    }
+    
+    .stInfo {
+        background: rgba(59, 130, 246, 0.1) !important;
+        border: 1px solid rgba(59, 130, 246, 0.2) !important;
+        border-radius: 12px !important;
+        color: #60a5fa !important;
+    }
+    
+    .stWarning {
+        background: rgba(251, 191, 36, 0.1) !important;
+        border: 1px solid rgba(251, 191, 36, 0.2) !important;
+        border-radius: 12px !important;
+    }
+    
+    .stError {
+        background: rgba(239, 68, 68, 0.1) !important;
+        border: 1px solid rgba(239, 68, 68, 0.2) !important;
+        border-radius: 12px !important;
+    }
+    
+    /* Spinner */
+    .stSpinner > div {
+        border-color: var(--accent-orange) transparent transparent transparent !important;
+    }
+    
+    /* iFrame and images */
+    iframe {
+        border-radius: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    img {
+        border-radius: 12px;
+    }
+    
+    /* Download links container */
+    .download-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin: 1rem 0;
+    }
+    
+    .download-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        padding: 0.625rem 1rem;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+    
+    .download-btn:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: var(--accent-orange);
+        color: var(--text-primary);
+        transform: translateY(-1px);
+    }
+    
+    /* Code/text preview */
+    .text-preview {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 1.25rem;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.85rem;
+        color: #d4d4d8;
+        max-height: 500px;
+        overflow-y: auto;
+        line-height: 1.6;
+    }
+    
+    .text-preview::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .text-preview::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .text-preview::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+    
+    /* Footer */
+    .footer {
+        margin-top: 4rem;
+        padding: 2rem 0;
+        text-align: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    
+    .footer p {
+        color: #52525b !important;
+        font-size: 0.85rem;
+    }
+    
+    .footer a {
+        color: var(--accent-orange);
+        text-decoration: none;
+    }
+    
+    /* Table styling */
     table {
         width: 100%;
         border-collapse: collapse;
         margin: 1rem 0;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 12px;
+        overflow: hidden;
     }
     
     th, td {
-        border: 1px solid #E0E0E0;
-        padding: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 0.75rem 1rem;
         text-align: left;
+        color: var(--text-secondary);
     }
     
     th {
-        background-color: #F5F5F5;
+        background: rgba(255, 255, 255, 0.03);
         font-weight: 600;
+        color: var(--text-primary);
     }
     
     /* Code block */
-    pre {
-        background-color: #F5F5F5;
-        padding: 1rem;
+    pre, code {
+        background: rgba(0, 0, 0, 0.3) !important;
         border-radius: 8px;
-        overflow-x: auto;
-        font-family: monospace;
+        font-family: 'JetBrains Mono', monospace !important;
+        color: #d4d4d8 !important;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .animate-in {
+        animation: fadeIn 0.5s ease forwards;
+    }
+    
+    /* Glow effect for headers */
+    .glow-text {
+        text-shadow: 0 0 40px rgba(249, 115, 22, 0.3);
     }
 </style>
 """, unsafe_allow_html=True)
 
 # App header with logo and title
-col1, col2 = st.columns([1, 5])
-with col1:
-    st.markdown('<div style="display: flex; justify-content: center; align-items: center; height: 100%;">'
-                '<span style="font-size: 3.5rem;">📝</span></div>', unsafe_allow_html=True)
-with col2:
-    st.title("Mistral OCR")
-    st.markdown('<p style="font-size: 1.2rem; margin-top: -0.8rem; color: #5E35B1;">Extract text from PDFs and images with powerful AI</p>', unsafe_allow_html=True)
+st.markdown('''
+<div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+    <div style="
+        width: 56px; 
+        height: 56px; 
+        background: linear-gradient(135deg, #f97316 0%, #14b8a6 100%);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+        box-shadow: 0 8px 32px rgba(249, 115, 22, 0.25);
+    ">✦</div>
+</div>
+''', unsafe_allow_html=True)
 
-# App description card
+st.title("Mistral OCR")
+st.markdown('<p style="font-size: 1.15rem; margin-top: -0.5rem; color: #71717a; font-weight: 400;">Extract text from PDFs and images with powerful AI</p>', unsafe_allow_html=True)
+
+# Hero section with gradient
 st.markdown("""
-<div class="feature-card" style="background-color: #EDE7F6; margin-bottom: 2rem;">
-    <h3 style="margin-top: 0;">Transform Documents into Text in Seconds</h3>
-    <p>
-        Mistral OCR leverages advanced AI to extract text from PDFs and images with high accuracy. 
-        Upload files directly or provide URLs, then download the extracted text in multiple formats.
+<div class="hero-container">
+    <h3 class="hero-title">🚀 Transform Documents into Text in Seconds</h3>
+    <p class="hero-subtitle">
+        Powered by Mistral's state-of-the-art OCR model. Upload files directly or provide URLs, 
+        process documents of any size, and download extracted text in multiple formats.
     </p>
 </div>
 """, unsafe_allow_html=True)
@@ -198,30 +621,34 @@ with st.container():
     with col1:
         st.markdown("""
         <div class="feature-card">
+            <div class="feature-icon">📄</div>
             <h4>PDF & Image Support</h4>
-            <p>Extract text from both PDFs and images with a single tool.</p>
+            <p>Extract text from both PDFs and images with a single tool. Supports JPG, PNG, and multi-page PDFs.</p>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("""
         <div class="feature-card">
+            <div class="feature-icon">🔗</div>
             <h4>URL & File Upload</h4>
-            <p>Process documents from URLs or upload files directly from your device.</p>
+            <p>Process documents from public URLs or upload files directly from your device—flexibility at your fingertips.</p>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
         st.markdown("""
         <div class="feature-card">
+            <div class="feature-icon">📚</div>
             <h4>Large PDF Processing</h4>
-            <p>Automatically splits and processes large PDFs with hundreds of pages.</p>
+            <p>Automatically splits and processes large PDFs with hundreds of pages into manageable chunks.</p>
         </div>
         """, unsafe_allow_html=True)
         
         st.markdown("""
         <div class="feature-card">
-            <h4>Text Formatting Cleanup</h4>
-            <p>Intelligently cleans up and formats extracted text to match the original document.</p>
+            <div class="feature-icon">✨</div>
+            <h4>Smart Text Cleanup</h4>
+            <p>Intelligently cleans up and formats extracted text—tables, headings, and paragraphs preserved.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -558,38 +985,73 @@ def create_pdf_from_markdown(markdown_text, file_name):
         return None
 
 # Main app section with card-like appearance
-st.markdown('<div style="background-color: #F5F5F5; padding: 2rem; border-radius: 12px; margin-top: 2rem;">', unsafe_allow_html=True)
+st.markdown('<div class="section-container">', unsafe_allow_html=True)
 
 # API Key handling - try to get from Streamlit secrets first
 api_key = None
 
 # Check if the API key is in Streamlit secrets
-if "MISTRAL_API_KEY" in st.secrets:
-    api_key = st.secrets["MISTRAL_API_KEY"]
-    st.success("✅ Mistral API key loaded from secrets")
-else:
+try:
+    if hasattr(st, 'secrets') and len(st.secrets) > 0 and "MISTRAL_API_KEY" in st.secrets:
+        api_key = st.secrets["MISTRAL_API_KEY"]
+        st.markdown('''
+        <div style="
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 10px;
+            padding: 0.625rem 1rem;
+            color: #4ade80;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        ">
+            <span>✓</span> API key loaded from secrets
+        </div>
+        ''', unsafe_allow_html=True)
+except (FileNotFoundError, KeyError, Exception):
+    pass
+
+if not api_key:
     # 1. API Key Input with better styling if not in secrets
     st.markdown("## 🔑 API Key")
-    st.markdown("Enter your Mistral API key to start processing documents.")
-    api_key = st.text_input("Mistral API Key", type="password", placeholder="Enter your API key here")
+    st.markdown('<p style="color: #a1a1aa; margin-bottom: 1rem;">Enter your Mistral API key to start processing documents.</p>', unsafe_allow_html=True)
+    api_key = st.text_input("Mistral API Key", type="password", placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx", label_visibility="collapsed")
     if not api_key:
-        st.info("👆 Please enter your API key above to continue.")
+        st.markdown('''
+        <div style="
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            color: #60a5fa;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        ">
+            <span>ℹ️</span> Enter your API key above to continue
+        </div>
+        ''', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
         
         # Add additional information at the bottom
         st.markdown("""
-        <div style="margin-top: 2rem;">
-            <h2>How to Get Started</h2>
-            <ol>
-                <li>Obtain a Mistral API key from <a href="https://console.mistral.ai/" target="_blank">console.mistral.ai</a></li>
-                <li>Enter your API key in the form above</li>
-                <li>Select your document type and upload method</li>
-                <li>Process your documents and download the extracted text</li>
-            </ol>
+        <div style="margin-top: 3rem; padding: 2rem; background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 16px;">
+            <h2 style="margin-top: 0 !important;">🚀 How to Get Started</h2>
+            <div style="color: #a1a1aa; line-height: 1.8;">
+                <p style="margin: 0.75rem 0;"><span style="color: #f97316; font-weight: 600;">1.</span> Obtain a Mistral API key from <a href="https://console.mistral.ai/" target="_blank" style="color: #f97316; text-decoration: none;">console.mistral.ai</a></p>
+                <p style="margin: 0.75rem 0;"><span style="color: #f97316; font-weight: 600;">2.</span> Enter your API key in the form above</p>
+                <p style="margin: 0.75rem 0;"><span style="color: #f97316; font-weight: 600;">3.</span> Select your document type and upload method</p>
+                <p style="margin: 0.75rem 0;"><span style="color: #f97316; font-weight: 600;">4.</span> Process your documents and download the extracted text</p>
+            </div>
         </div>
         
         <div class="footer">
-            <p>© 2024 Mistral OCR | Powered by Mistral AI</p>
+            <p>Built with ♥ using <a href="https://mistral.ai" target="_blank">Mistral AI</a> · © 2024</p>
         </div>
         """, unsafe_allow_html=True)
         
@@ -609,40 +1071,40 @@ if "file_names" not in st.session_state:
 
 # 2. Document Type Selection with visual indicators
 st.markdown("## 📄 Document Type")
-file_type_col1, file_type_col2 = st.columns(2)
-with file_type_col1:
-    file_type = st.radio("Select document type", ("PDF", "Image"))
-    st.markdown(f"""
-    <div style="margin-top: 0.5rem;">
-        <span class="status-badge badge-{'pdf' if file_type == 'PDF' else 'image'}">
-            {file_type} Selected
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown('<p style="color: #71717a; font-size: 0.9rem; margin-bottom: 1rem;">Select the type of document you want to process</p>', unsafe_allow_html=True)
+file_type = st.radio("Select document type", ("PDF", "Image"), horizontal=True, label_visibility="collapsed")
+st.markdown(f"""
+<div style="margin-top: 0.75rem;">
+    <span class="status-badge badge-{'pdf' if file_type == 'PDF' else 'image'}">
+        {'📑' if file_type == 'PDF' else '🖼️'} {file_type} Selected
+    </span>
+</div>
+""", unsafe_allow_html=True)
 
 # 3. Source Selection with better organization
 st.markdown("## 📦 Document Source")
-source_type_col1, source_type_col2 = st.columns(2)
-with source_type_col1:
-    source_type = st.radio("Select source type", ("URL", "Local Upload"))
-    st.markdown(f"""
-    <div style="margin-top: 0.5rem;">
-        <span class="status-badge" style="background-color: #EDE7F6; color: #5E35B1;">
-            {source_type}
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown('<p style="color: #71717a; font-size: 0.9rem; margin-bottom: 1rem;">Choose how you want to provide your document</p>', unsafe_allow_html=True)
+source_type = st.radio("Select source type", ("URL", "Local Upload"), horizontal=True, label_visibility="collapsed")
+st.markdown(f"""
+<div style="margin-top: 0.75rem;">
+    <span class="status-badge badge-{'url' if source_type == 'URL' else 'upload'}">
+        {'🔗' if source_type == 'URL' else '📁'} {source_type}
+    </span>
+</div>
+""", unsafe_allow_html=True)
 
 # PDF Chunk Size Configuration with better UI
 if file_type == "PDF":
-    with st.expander("⚙️ Advanced PDF Settings"):
-        st.markdown("Configure how large PDFs are processed:")
+    with st.expander("⚙️ Advanced PDF Settings", expanded=False):
+        st.markdown('<p style="color: #a1a1aa; margin-bottom: 1rem;">Configure how large PDFs are processed</p>', unsafe_allow_html=True)
         chunk_size = st.slider("Pages per chunk", 50, 200, 100, 
                               help="For PDFs with many pages, the document will be automatically split into chunks of this many pages")
-        st.caption("Large PDFs will be split into chunks to optimize processing.")
+        st.markdown('<p style="color: #52525b; font-size: 0.8rem; margin-top: 0.5rem;">💡 Large PDFs will be split into chunks to optimize processing</p>', unsafe_allow_html=True)
+        
+        st.markdown("---")
         
         # Add text cleanup options
-        st.markdown("Text Cleanup Options:")
+        st.markdown('<p style="color: #fafafa; font-weight: 500; margin-bottom: 0.75rem;">Text Cleanup Options</p>', unsafe_allow_html=True)
         cleanup_enabled = st.checkbox("Enable advanced text formatting cleanup", value=True,
                                      help="Cleans up and formats extracted text to better match the original document")
         
@@ -659,24 +1121,29 @@ input_url = ""
 uploaded_files = []
 
 if source_type == "URL":
-    st.markdown("### Enter Document URLs")
+    st.markdown("### 🔗 Enter Document URLs")
     input_url = st.text_area("One URL per line", 
-                             placeholder="https://example.com/document.pdf\nhttps://example.com/image.jpg")
+                             placeholder="https://example.com/document.pdf\nhttps://example.com/image.jpg",
+                             label_visibility="collapsed",
+                             height=100)
     if file_type == "PDF":
-        st.caption("Supported formats: PDF files from public URLs")
+        st.markdown('<p style="color: #52525b; font-size: 0.8rem; margin-top: 0.5rem;">📎 Supported: PDF files from public URLs</p>', unsafe_allow_html=True)
     else:
-        st.caption("Supported formats: JPG, JPEG, PNG images from public URLs")
+        st.markdown('<p style="color: #52525b; font-size: 0.8rem; margin-top: 0.5rem;">📎 Supported: JPG, JPEG, PNG images from public URLs</p>', unsafe_allow_html=True)
 else:
-    st.markdown("### Upload Documents")
+    st.markdown("### 📁 Upload Documents")
     file_types = ["pdf"] if file_type == "PDF" else ["jpg", "jpeg", "png"]
     uploaded_files = st.file_uploader(f"Upload {file_type} files", 
                                       type=file_types, 
-                                      accept_multiple_files=True)
-    st.caption(f"Drag and drop your {', '.join(file_types).upper()} files here")
+                                      accept_multiple_files=True,
+                                      label_visibility="collapsed")
+    st.markdown(f'<p style="color: #52525b; font-size: 0.8rem; margin-top: 0.5rem;">📎 Drag and drop your {", ".join(file_types).upper()} files here</p>', unsafe_allow_html=True)
 
 # Process button with improved styling
+st.markdown("---")
 st.markdown("## 🚀 Process Documents")
-process_button = st.button("Extract Text", use_container_width=True)
+st.markdown('<p style="color: #71717a; font-size: 0.9rem; margin-bottom: 1rem;">Click below to extract text from your documents</p>', unsafe_allow_html=True)
+process_button = st.button("✨ Extract Text", use_container_width=True)
 
 # 4. Process Button & OCR Handling
 if process_button:
@@ -862,10 +1329,11 @@ st.markdown('</div>', unsafe_allow_html=True)
 if st.session_state["ocr_result"]:
     st.markdown('<div class="results-section">', unsafe_allow_html=True)
     st.markdown("## 📋 Results")
+    st.markdown('<p style="color: #71717a; font-size: 0.9rem; margin-bottom: 1.5rem;">Your extracted text is ready for download</p>', unsafe_allow_html=True)
     
     # Create tabs for each document
     if len(st.session_state["ocr_result"]) > 1:
-        tabs = st.tabs([f"Document {idx+1}: {name}" for idx, name in enumerate(st.session_state["file_names"])])
+        tabs = st.tabs([f"📄 {name}" for idx, name in enumerate(st.session_state["file_names"])])
     else:
         tabs = [st.container()]
     
@@ -883,20 +1351,20 @@ if st.session_state["ocr_result"]:
             col1, col2 = st.columns(2)
             
             with col1:
-                st.markdown(f"### Original Document")
+                st.markdown(f"### 📄 Original Document")
                 
                 if file_type == "PDF":
                     with st.container():
-                        pdf_embed_html = f'<iframe src="{st.session_state["preview_src"][idx]}" width="100%" height="600" frameborder="0" style="border-radius: 8px; border: 1px solid #E0E0E0;"></iframe>'
+                        pdf_embed_html = f'<iframe src="{st.session_state["preview_src"][idx]}" width="100%" height="600" frameborder="0" style="border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);"></iframe>'
                         st.markdown(pdf_embed_html, unsafe_allow_html=True)
                 else:
                     if source_type == "Local Upload" and st.session_state["image_bytes"]:
-                        st.image(st.session_state["image_bytes"][idx], use_column_width=True)
+                        st.image(st.session_state["image_bytes"][idx], use_container_width=True)
                     else:
-                        st.image(st.session_state["preview_src"][idx], use_column_width=True)
+                        st.image(st.session_state["preview_src"][idx], use_container_width=True)
             
             with col2:
-                st.markdown(f"### Extracted Text")
+                st.markdown(f"### ✨ Extracted Text")
                 
                 # Add toggle for raw vs cleaned text
                 show_raw = st.checkbox("Show raw OCR output", value=False, key=f"raw_toggle_{idx}")
@@ -905,26 +1373,25 @@ if st.session_state["ocr_result"]:
                 
                 # Download section with better UI
                 with st.expander("💾 Download Options", expanded=True):
-                    st.markdown("Save the extracted text in your preferred format:")
+                    st.markdown('<p style="color: #a1a1aa; margin-bottom: 1rem; font-size: 0.9rem;">Save the extracted text in your preferred format</p>', unsafe_allow_html=True)
                     
-                    def create_download_link(data, filetype, filename, button_text):
+                    def create_download_link(data, filetype, filename, button_text, icon):
                         b64 = base64.b64encode(data.encode() if isinstance(data, str) else data).decode()
-                        href = f'<a href="data:{filetype};base64,{b64}" download="{filename}" style="text-decoration: none;">'
-                        href += f'<div style="background-color: #F3F4F6; border-radius: 6px; padding: 0.5rem 1rem; display: inline-block; margin-right: 1rem; border: 1px solid #E0E0E0;">'
-                        href += f'<span style="color: #5E35B1; font-weight: 500;">{button_text}</span></div></a>'
+                        href = f'<a href="data:{filetype};base64,{b64}" download="{filename}" class="download-btn">'
+                        href += f'{icon} {button_text}</a>'
                         return href
                     
-                    download_row = '<div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">'
+                    download_row = '<div class="download-container">'
                     
                     # JSON download
                     json_data = json.dumps({"ocr_result": display_text}, ensure_ascii=False, indent=2)
-                    download_row += create_download_link(json_data, "application/json", f"{file_base_name}.json", "JSON")
+                    download_row += create_download_link(json_data, "application/json", f"{file_base_name}.json", "JSON", "📦")
                     
                     # TXT download
-                    download_row += create_download_link(display_text, "text/plain", f"{file_base_name}.txt", "TXT")
+                    download_row += create_download_link(display_text, "text/plain", f"{file_base_name}.txt", "TXT", "📝")
                     
                     # MD download
-                    download_row += create_download_link(display_text, "text/markdown", f"{file_base_name}.md", "Markdown")
+                    download_row += create_download_link(display_text, "text/markdown", f"{file_base_name}.md", "Markdown", "📋")
                     
                     # PDF download
                     pdf_error = None
@@ -932,7 +1399,7 @@ if st.session_state["ocr_result"]:
                         # Generate PDF from markdown
                         pdf_data = create_pdf_from_markdown(display_text, file_base_name)
                         if pdf_data:
-                            download_row += create_download_link(pdf_data, "application/pdf", f"{file_base_name}.pdf", "PDF")
+                            download_row += create_download_link(pdf_data, "application/pdf", f"{file_base_name}.pdf", "PDF", "📄")
                     except Exception as e:
                         pdf_error = str(e)
                     
@@ -944,24 +1411,27 @@ if st.session_state["ocr_result"]:
                         st.warning(f"PDF generation error: {pdf_error}")
                 
                 # Text preview with scrolling
-                st.markdown('<div style="height: 480px; overflow-y: auto; padding: 1rem; border-radius: 8px; border: 1px solid #E0E0E0; background-color: #FAFAFA; font-family: monospace;">', unsafe_allow_html=True)
+                st.markdown('<div class="text-preview">', unsafe_allow_html=True)
                 st.markdown(display_text)
                 st.markdown('</div>', unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
     
     # Add a clear results button
-    if st.button("Clear Results", key="clear_results"):
-        st.session_state["ocr_result"] = []
-        st.session_state["cleaned_result"] = []
-        st.session_state["preview_src"] = []
-        st.session_state["image_bytes"] = []
-        st.session_state["file_names"] = []
-        st.experimental_rerun()
+    st.markdown("<br>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        if st.button("🗑️ Clear Results", key="clear_results", use_container_width=True):
+            st.session_state["ocr_result"] = []
+            st.session_state["cleaned_result"] = []
+            st.session_state["preview_src"] = []
+            st.session_state["image_bytes"] = []
+            st.session_state["file_names"] = []
+            st.rerun()
 
 # Footer section
 st.markdown("""
 <div class="footer">
-    <p>© 2024 Mistral OCR | Powered by Mistral AI</p>
+    <p>Built with ♥ using <a href="https://mistral.ai" target="_blank">Mistral AI</a> · <a href="https://streamlit.io" target="_blank">Streamlit</a> · © 2024</p>
 </div>
 """, unsafe_allow_html=True)
