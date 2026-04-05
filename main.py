@@ -4,7 +4,7 @@ import base64
 import json
 import time
 import tempfile
-from mistralai import Mistral
+from mistralai.client import Mistral
 import PyPDF2
 import io
 import re
